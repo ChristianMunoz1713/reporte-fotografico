@@ -1,0 +1,127 @@
+:root {
+  --azul: #17345c;
+  --azul-2: #234b80;
+  --ambar: #f59e0b;
+  --verde: #15803d;
+  --rojo: #b91c1c;
+  --gris: #64748b;
+  --borde: #d8dee8;
+  --fondo: #f4f6f9;
+  --tarjeta: #ffffff;
+  --texto: #1e293b;
+  --radio: 12px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+
+/* Barra superior */
+.barra {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; padding-top: max(10px, env(safe-area-inset-top));
+  background: var(--azul); color: #fff;
+}
+.barra h1 { flex: 1; margin: 0; font-size: 1.1rem; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icono { background: transparent; border: 0; color: #fff; font-size: 1.4rem; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; }
+.icono:active { background: rgba(255,255,255,.15); }
+.btn-instalar { background: var(--ambar); color: #1e293b; border: 0; border-radius: 8px; padding: 6px 12px; font-weight: 650; cursor: pointer; }
+
+main { max-width: 860px; margin: 0 auto; padding: 16px 16px 120px; }
+
+/* Botones */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 10px 16px; border-radius: 10px;
+  border: 1px solid var(--borde); background: #fff; cursor: pointer; font-weight: 600;
+}
+.btn:active { transform: translateY(1px); }
+.btn.primario { background: var(--azul); border-color: var(--azul); color: #fff; }
+.btn.acento { background: var(--ambar); border-color: var(--ambar); color: #1e293b; }
+.btn.peligro { color: var(--rojo); border-color: #f1c4c4; }
+.btn.chico { min-height: 36px; padding: 6px 12px; font-size: .9rem; }
+.btn[disabled] { opacity: .5; cursor: default; }
+.fila-botones { display: flex; flex-wrap: wrap; gap: 10px; }
+.fila-botones .btn { flex: 1 1 200px; }
+
+/* Tarjetas */
+.tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: var(--radio); padding: 14px; margin-bottom: 12px; }
+.tarjeta h2 { margin: 0 0 10px; font-size: 1.05rem; }
+.sub { color: var(--gris); font-size: .9rem; }
+.vacio { text-align: center; color: var(--gris); padding: 32px 12px; }
+
+.reporte-item { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.reporte-item .info { flex: 1; min-width: 0; }
+.reporte-item .unidad { font-weight: 700; font-size: 1.1rem; }
+.barra-progreso { height: 6px; background: #e5e9f0; border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.barra-progreso > div { height: 100%; background: var(--verde); }
+
+/* Formularios */
+.campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+label.campo { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--gris); font-weight: 600; }
+label.campo input, label.campo select, label.campo textarea {
+  border: 1px solid var(--borde); border-radius: 8px; padding: 10px; background: #fff; color: var(--texto); font-weight: 400; font-size: 1rem;
+}
+label.check { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+label.check input { width: 22px; height: 22px; }
+
+/* Pestañas ANTES / DESPUÉS */
+.pestanas { display: flex; background: #e5e9f0; border-radius: 10px; padding: 4px; margin-bottom: 12px; position: sticky; top: 60px; z-index: 5; }
+.pestanas button { flex: 1; border: 0; background: transparent; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; color: var(--gris); }
+.pestanas button.activa { background: #fff; color: var(--azul); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.pestanas .cuenta { font-weight: 500; font-size: .8rem; }
+
+/* Defecto */
+.defecto { display: flex; gap: 12px; align-items: stretch; }
+.defecto.omitido { opacity: .55; }
+.defecto .foto {
+  width: 120px; height: 90px; flex: none; border-radius: 8px; border: 2px dashed var(--borde);
+  background: #f8fafc center/cover no-repeat; display: flex; align-items: center; justify-content: center;
+  color: var(--gris); font-size: 1.8rem; cursor: pointer; position: relative;
+}
+.defecto .foto.tiene { border: 2px solid var(--verde); }
+.defecto .cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.defecto .leyenda { font-weight: 650; line-height: 1.3; word-break: break-word; }
+.defecto .acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.etiqueta { display: inline-block; font-size: .75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.etiqueta.ok { background: #dcfce7; color: var(--verde); }
+.etiqueta.pend { background: #fef3c7; color: #92400e; }
+.etiqueta.omit { background: #e2e8f0; color: var(--gris); }
+
+/* Importación */
+.tabla-prev { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.tabla-prev th, .tabla-prev td { border-bottom: 1px solid var(--borde); padding: 6px; text-align: left; vertical-align: top; }
+.desplazable { overflow-x: auto; }
+.lista-unidades label { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--borde); }
+
+/* Barra inferior fija */
+.pie-fijo {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  background: #fff; border-top: 1px solid var(--borde);
+  padding: 10px 16px; padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+.pie-fijo .interno { max-width: 860px; margin: 0 auto; display: flex; gap: 10px; }
+.pie-fijo .btn { flex: 1; }
+
+/* Aviso */
+.aviso {
+  position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(20px);
+  background: #1e293b; color: #fff; padding: 10px 16px; border-radius: 10px; opacity: 0; pointer-events: none;
+  transition: opacity .2s, transform .2s; max-width: calc(100% - 32px); z-index: 50; text-align: center;
+}
+.aviso.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Visor de foto */
+.visor { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; }
+.visor img { max-width: 100%; max-height: 75vh; border-radius: 8px; }
+
+@media (max-width: 420px) {
+  .defecto .foto { width: 96px; height: 72px; }
+}

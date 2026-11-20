@@ -1,0 +1,17 @@
+{
+  "name": "Reporte Fotográfico de Calidad",
+  "short_name": "Reporte Foto",
+  "description": "Genera reportes fotográficos ANTES / DESPUÉS de unidades a partir de los defectos de Tcar.",
+  "lang": "es-MX",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f6f9",
+  "theme_color": "#17345c",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
