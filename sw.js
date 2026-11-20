@@ -1,5 +1,5 @@
 // Service worker: guarda la app en caché para que funcione sin internet en el taller.
-const CACHE = 'reporte-foto-v2';
+const CACHE = 'reporte-foto-v3';
 const ARCHIVOS = [
   './',
   './index.html',
@@ -11,7 +11,8 @@ const ARCHIVOS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/apple-touch-icon.png',
+  './icons/logo.jpg'
 ];
 
 self.addEventListener('install', (e) => {

@@ -10,7 +10,7 @@ App web instalable desde Chrome (PWA). Funciona sin internet una vez instalada; 
 5. Pestaña **DESPUÉS**: lo mismo al terminar el trabajo.
 6. **Generar PDF** → Descargar o Compartir (WhatsApp, correo…).
 
-PDF: carta horizontal, 3 fotos por fila, 2 filas por hoja, primero la sección ANTES y luego DESPUÉS, con leyenda bajo cada foto, datos de la unidad y supervisor.
+PDF: carta horizontal, 3 fotos por fila, 2 filas por hoja, primero la sección ANTES y luego DESPUÉS, con el logo de la empresa en cada hoja, datos de la unidad y una leyenda numerada bajo cada foto.
 
 ## Publicarla para instalar desde Chrome
 Chrome solo permite instalar apps servidas por **HTTPS**. Sube esta carpeta completa (sin `.claude`) a cualquier hosting estático, por ejemplo:

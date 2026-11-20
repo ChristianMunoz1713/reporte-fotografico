@@ -19,7 +19,7 @@ function aviso(msg, ms = 2500) {
 }
 
 /* ---------------- Ajustes (localStorage) ---------------- */
-const AJUSTES_DEF = { empresa: 'AUTOCOM', taller: '', supervisor: '', sello: true, incluirOmitidos: false };
+const AJUSTES_DEF = { empresa: 'AUTOCOM SERVICES', taller: '', supervisor: '', sello: true, incluirOmitidos: false };
 function leerAjustes() {
   try { return { ...AJUSTES_DEF, ...JSON.parse(localStorage.getItem('ajustes') || '{}') }; } catch { return { ...AJUSTES_DEF }; }
 }
@@ -181,7 +181,6 @@ function vistaAjustes() {
       <div class="campos">
         <label class="campo">Empresa<input id="ajEmpresa" value="${esc(a.empresa)}"></label>
         <label class="campo">Taller<input id="ajTaller" value="${esc(a.taller)}" placeholder="Ej. APIZACO"></label>
-        <label class="campo">Supervisor de calidad<input id="ajSupervisor" value="${esc(a.supervisor)}"></label>
       </div>
     </div>
     <div class="tarjeta">
@@ -193,7 +192,7 @@ function vistaAjustes() {
     <p class="sub" style="margin-top:16px">Los reportes y fotos se guardan solo en este dispositivo. Genera y comparte el PDF antes de borrar un reporte.</p>`;
   $('#ajGuardar').onclick = () => {
     guardarAjustes({
-      empresa: $('#ajEmpresa').value.trim(), taller: $('#ajTaller').value.trim(), supervisor: $('#ajSupervisor').value.trim(),
+      empresa: $('#ajEmpresa').value.trim(), taller: $('#ajTaller').value.trim(),
       sello: $('#ajSello').checked, incluirOmitidos: $('#ajOmit').checked,
     });
     aviso('Ajustes guardados');
@@ -461,7 +460,6 @@ async function vistaReporte(id) {
       <div class="campos" style="margin-top:12px">
         <label class="campo">Unidad<input data-campo="unidad" value="${esc(r.unidad)}" placeholder="Ej. NKCR65988"></label>
         <label class="campo">Fecha<input type="date" data-campo="fecha" value="${esc(r.fecha)}"></label>
-        <label class="campo">Supervisor de calidad<input data-campo="supervisor" value="${esc(r.supervisor)}"></label>
         <label class="campo">Taller<input data-campo="taller" value="${esc(r.taller)}"></label>
         <label class="campo">Orden / referencia<input data-campo="orden" value="${esc(r.orden)}"></label>
       </div>
@@ -611,6 +609,17 @@ async function abrirVisor(r, defId, fase) {
 }
 
 /* ---------------- PDF ---------------- */
+let logoCache = null;
+async function logoEmpresa() {
+  if (logoCache) return logoCache;
+  try {
+    const url = await blobADataUrl(await (await fetch('icons/logo.jpg')).blob());
+    const img = await cargarImagen(url);
+    logoCache = { url, ratio: img.naturalWidth / img.naturalHeight };
+  } catch { logoCache = null; }
+  return logoCache;
+}
+
 function blobADataUrl(b) {
   return new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(b); });
 }
@@ -630,63 +639,80 @@ async function generarPdf(r) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'letter' });
     const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
-    const M = 10, COLS = 3, FILAS = 2, GAP = 6;
-    const cabecera = 38, pie = 12;
+    const M = 10, COLS = 3, FILAS = 2, GAP = 5;
+    const ARRIBA = 40, PIE = 14, LEY = 12;
     const celW = (W - 2 * M - GAP * (COLS - 1)) / COLS;
-    const celH = (H - cabecera - pie - M - GAP * (FILAS - 1)) / FILAS;
-    const fotoH = celH - 14;
-    const AZUL = [23, 52, 92];
+    const celH = (H - ARRIBA - PIE - GAP * (FILAS - 1)) / FILAS;
+    const fotoH = celH - LEY;
+    const AZUL = [16, 46, 140], ROJO = [192, 40, 30], TINTA = [30, 41, 59], GRIS = [100, 116, 139], CLARO = [243, 245, 250], LINEA = [214, 220, 232];
+    const logo = await logoEmpresa();
     let paginas = 0;
 
-    const encabezado = (fase) => {
-      doc.setFillColor(...AZUL);
-      doc.rect(0, 0, W, 16, 'F');
-      doc.setTextColor(255);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-      doc.text(`REPORTE FOTOGRÁFICO — ${FASES[fase]}`, M, 10.5);
-      doc.setFontSize(11);
-      doc.text(aj.empresa || '', W - M, 10.5, { align: 'right' });
-      doc.setTextColor(30, 41, 59);
-      doc.setFontSize(10);
-      const datos = [
-        ['Unidad', r.unidad], ['Fecha', fechaLarga(r.fecha)], ['Taller', r.taller], ['Orden', r.orden],
-      ].filter(([, v]) => v);
-      let x = M;
-      datos.forEach(([k, v]) => {
-        doc.setFont('helvetica', 'bold'); doc.text(`${k}:`, x, 23);
-        const kw = doc.getTextWidth(`${k}: `);
-        doc.setFont('helvetica', 'normal'); doc.text(String(v), x + kw, 23);
-        x += kw + doc.getTextWidth(String(v)) + 10;
+    const encabezado = (insignia, colorInsignia) => {
+      // Logo y título
+      if (logo) doc.addImage(logo.url, 'JPEG', M, 8, 9 * logo.ratio, 9, 'logo', 'FAST');
+      else { doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(...AZUL); doc.text(aj.empresa || '', M, 15); }
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(...AZUL);
+      doc.text('REPORTE FOTOGRÁFICO', W - M, 12.5, { align: 'right' });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...GRIS);
+      doc.text('Evidencia fotográfica de reparación de unidad', W - M, 17.5, { align: 'right' });
+      // Franja con los colores de la marca
+      doc.setFillColor(...AZUL); doc.rect(M, 21, W - 2 * M, 1, 'F');
+      doc.setFillColor(...ROJO); doc.rect(M, 22, W - 2 * M, 0.5, 'F');
+      // Datos de la unidad
+      const datos = [['UNIDAD', r.unidad || '—'], ['TALLER', r.taller], ['ORDEN / REFERENCIA', r.orden]].filter(([, v]) => v);
+      const insW = 72;
+      doc.setFillColor(...CLARO); doc.setDrawColor(...LINEA); doc.setLineWidth(0.2);
+      doc.roundedRect(M, 25.5, W - 2 * M - insW - 4, 10.5, 1.5, 1.5, 'FD');
+      let x = M + 5;
+      datos.forEach(([k, v], i) => {
+        if (i) { doc.setDrawColor(...LINEA); doc.line(x - 5, 27.5, x - 5, 34); }
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(...GRIS);
+        doc.text(k, x, 29.3);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...AZUL);
+        doc.text(String(v), x, 34);
+        x += Math.max(doc.getTextWidth(String(v)), 30) + 10;
       });
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-      doc.text('Evidencia Fotográfica', W / 2, 32, { align: 'center' });
-      doc.setDrawColor(200); doc.line(M, 34.5, W - M, 34.5);
+      doc.setFillColor(...colorInsignia);
+      doc.roundedRect(W - M - insW, 25.5, insW, 10.5, 1.5, 1.5, 'F');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(255);
+      doc.text(insignia, W - M - insW / 2, 32.2, { align: 'center' });
     };
 
+    const SECCION = { antes: ['ANTES DE LA REPARACIÓN', ROJO], despues: ['DESPUÉS DE LA REPARACIÓN', AZUL] };
     for (const fase of Object.keys(FASES)) {
       const items = [];
-      if (r.idFoto[fase]) items.push({ clave: claveFoto(r.id, 'ID', fase), leyenda: `UNIDAD ${r.unidad}`.trim() });
+      if (r.idFoto[fase]) items.push({ clave: claveFoto(r.id, 'ID', fase), leyenda: `IDENTIFICACIÓN DE LA UNIDAD ${r.unidad}`.trim() });
       r.defectos.filter((x) => !x.omitir && x.fotos[fase]).forEach((x) => items.push({ clave: claveFoto(r.id, x.id, fase), leyenda: x.leyenda }));
       if (!items.length) continue;
 
       for (let i = 0; i < items.length; i++) {
         const pos = i % (COLS * FILAS);
-        if (pos === 0) { if (paginas++) doc.addPage(); encabezado(fase); }
+        if (pos === 0) { if (paginas++) doc.addPage(); encabezado(...SECCION[fase]); }
         const cx = M + (pos % COLS) * (celW + GAP);
-        const cy = cabecera + Math.floor(pos / COLS) * (celH + GAP);
+        const cy = ARRIBA + Math.floor(pos / COLS) * (celH + GAP);
         const blob = await DB.get('fotos', items[i].clave);
         const dataUrl = await blobADataUrl(blob);
         const img = await cargarImagen(dataUrl);
+        // Foto (ajustada sin deformar)
+        doc.setFillColor(...CLARO);
+        doc.rect(cx, cy, celW, fotoH, 'F');
         const k = Math.min(celW / img.naturalWidth, fotoH / img.naturalHeight);
         const iw = img.naturalWidth * k, ih = img.naturalHeight * k;
-        doc.setFillColor(245, 246, 248);
-        doc.rect(cx, cy, celW, fotoH, 'F');
         doc.addImage(dataUrl, 'JPEG', cx + (celW - iw) / 2, cy + (fotoH - ih) / 2, iw, ih, undefined, 'FAST');
-        doc.setDrawColor(150); doc.setLineWidth(0.3);
-        doc.rect(cx, cy, celW, fotoH);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(30, 41, 59);
-        const lineas = doc.splitTextToSize(items[i].leyenda, celW - 2).slice(0, 3);
-        doc.text(lineas, cx + celW / 2, cy + fotoH + 4.5, { align: 'center' });
+        // Leyenda con número
+        doc.setFillColor(...CLARO);
+        doc.rect(cx, cy + fotoH, celW, LEY, 'F');
+        doc.setFillColor(...SECCION[fase][1]);
+        doc.rect(cx, cy + fotoH, 9, LEY, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(255);
+        doc.text(String(i + 1).padStart(2, '0'), cx + 4.5, cy + fotoH + LEY / 2 + 1.2, { align: 'center' });
+        doc.setFontSize(7.8); doc.setTextColor(...TINTA);
+        const lineas = doc.splitTextToSize(items[i].leyenda, celW - 13).slice(0, 3);
+        const altoTxt = lineas.length * 3.3;
+        doc.text(lineas, cx + 11.5, cy + fotoH + (LEY - altoTxt) / 2 + 2.6);
+        doc.setDrawColor(...LINEA); doc.setLineWidth(0.25);
+        doc.rect(cx, cy, celW, celH);
       }
     }
 
@@ -694,15 +720,16 @@ async function generarPdf(r) {
     const omitidos = r.defectos.filter((x) => x.omitir);
     if (aj.incluirOmitidos && omitidos.length) {
       if (paginas++) doc.addPage();
-      doc.setFillColor(...AZUL); doc.rect(0, 0, W, 16, 'F');
-      doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-      doc.text('DEFECTOS SIN EVIDENCIA FOTOGRÁFICA', M, 10.5);
-      doc.setTextColor(30, 41, 59); doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-      let y = 26;
+      encabezado('SIN EVIDENCIA FOTOGRÁFICA', GRIS);
+      let y = ARRIBA + 2;
       omitidos.forEach((x, i) => {
-        if (y > H - pie - 6) { doc.addPage(); y = 20; }
-        doc.text(`${i + 1}.  ${x.leyenda}`, M, y);
-        y += 6.5;
+        if (y > H - PIE - 8) { doc.addPage(); encabezado('SIN EVIDENCIA FOTOGRÁFICA', GRIS); y = ARRIBA + 2; }
+        if (i % 2 === 0) { doc.setFillColor(...CLARO); doc.rect(M, y - 4.6, W - 2 * M, 7, 'F'); }
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...GRIS);
+        doc.text(String(i + 1).padStart(2, '0'), M + 3, y);
+        doc.setTextColor(...TINTA);
+        doc.text(x.leyenda, M + 13, y);
+        y += 7;
       });
     }
 
@@ -711,9 +738,11 @@ async function generarPdf(r) {
     const total = doc.getNumberOfPages();
     for (let p = 1; p <= total; p++) {
       doc.setPage(p);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(100, 116, 139);
-      doc.text(`Supervisor de calidad: ${r.supervisor || '________________'}`, M, H - 5);
-      doc.text(`Página ${p} de ${total}`, W - M, H - 5, { align: 'right' });
+      doc.setDrawColor(...LINEA); doc.setLineWidth(0.3);
+      doc.line(M, H - 10, W - M, H - 10);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...GRIS);
+      doc.text([aj.empresa, `Reporte fotográfico de la unidad ${r.unidad || ''}`].filter(Boolean).join('   ·   '), M, H - 6);
+      doc.text(`Página ${p} de ${total}`, W - M, H - 6, { align: 'right' });
     }
 
     const nombre = `REPORTE FOTOGRAFICO ${r.unidad || 'SIN UNIDAD'}.pdf`;
